@@ -23,6 +23,9 @@ from digistrat.themes import PRESETS  # noqa: E402
 st.set_page_config(page_title="Digitalisierungsstrategie", page_icon="🏭", layout="wide")
 ROOT = Path(os.environ.get("DIGISTRAT_PROJEKTE", Path.cwd() / "projekte"))
 ROOT.mkdir(parents=True, exist_ok=True)
+KEY_FILE = Path.home() / ".digistrat" / "anthropic_key"
+if not os.environ.get("ANTHROPIC_API_KEY") and KEY_FILE.exists():
+    os.environ["ANTHROPIC_API_KEY"] = KEY_FILE.read_text(encoding="utf-8").strip()
 
 st.markdown("""<style>
 h1, h2, h3 {color:#152C5A;} .stButton>button {background:#004F9F;color:white;border:0;}
@@ -56,8 +59,25 @@ def sidebar() -> Project | None:
     sel = st.sidebar.selectbox("Projekt", projects, index=projects.index(cur) if cur in projects else 0)
     st.session_state.projekt = sel
     key_ok = bool(os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN"))
-    st.sidebar.caption(("🟢 KI verfügbar" if key_ok else "⚪ KI: ANTHROPIC_API_KEY nicht gesetzt") +
-                       f" · Projekte in `{ROOT}`")
+    with st.sidebar.expander("🟢 KI aktiv" if key_ok else "⚪ KI einrichten (API-Key)", expanded=False):
+        st.caption("Key von console.anthropic.com → API Keys. Wird nur lokal auf diesem Rechner gespeichert.")
+        k = st.text_input("Anthropic API-Key", type="password", placeholder="sk-ant-…")
+        remember = st.checkbox("Auf diesem Rechner merken", value=True)
+        if st.button("Key übernehmen", disabled=not k):
+            os.environ["ANTHROPIC_API_KEY"] = k.strip()
+            if remember:
+                KEY_FILE.parent.mkdir(parents=True, exist_ok=True)
+                KEY_FILE.write_text(k.strip(), encoding="utf-8")
+                try:
+                    KEY_FILE.chmod(0o600)
+                except OSError:
+                    pass
+            st.rerun()
+        if key_ok and KEY_FILE.exists() and st.button("Gespeicherten Key löschen"):
+            KEY_FILE.unlink()
+            os.environ.pop("ANTHROPIC_API_KEY", None)
+            st.rerun()
+    st.sidebar.caption(f"Projekte in `{ROOT}`")
     return Project.open(ROOT / sel)
 
 

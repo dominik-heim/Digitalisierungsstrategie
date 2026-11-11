@@ -23,6 +23,21 @@ flowchart LR
   F --> G3[BPMN-Dateien]
 ```
 
+## Schnellstart ohne Vorkenntnisse
+
+1. **Python installieren** (einmalig, Version 3.10 oder neuer) von [python.org/downloads](https://www.python.org/downloads/).
+   Unter Windows im Installer unbedingt **„Add python.exe to PATH“** ankreuzen.
+2. **Dieses Repository herunterladen:** auf GitHub oben rechts **„Code“ → „Download ZIP“** klicken und die ZIP-Datei entpacken.
+3. **Doppelklick auf die Startdatei:**
+   - Windows: `Start-Digistrat-Windows.bat`
+   - Mac: `Start-Digistrat-Mac.command`. Falls macOS sie blockiert: Rechtsklick → „Öffnen“ → „Öffnen“.
+
+   Beim ersten Start wird alles automatisch installiert (1–3 Minuten). Danach öffnet sich der Browser mit der App unter `http://localhost:8501`.
+4. **KI einrichten:** In der App links auf „KI einrichten (API-Key)“ klicken und den Key von
+   [console.anthropic.com](https://console.anthropic.com) eintragen. Der Key wird nur lokal unter `~/.digistrat/` gespeichert.
+
+Zum Beenden das schwarze Konsolenfenster schließen. Ihre Projekte liegen im Unterordner `projekte/`.
+
 ## Methodenkoffer
 
 | Phase | Methoden-Tools | Automatische Auswertung |
