@@ -1,0 +1,14 @@
+kunde: Muster Maschinenbau GmbH
+branche: Sondermaschinenbau, 600 MA
+projekt: Digitalisierungsstrategie
+berater: Digital Solutions
+startdatum: '2026-11-11'
+roadmap_start: 2027-Q1
+zinssatz: 0.08
+theme:
+  preset: ingenics
+  pptx_template: ''
+  logo: ''
+ki:
+  model: claude-opus-5-5
+  effort: high

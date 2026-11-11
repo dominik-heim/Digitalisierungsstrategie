@@ -1,0 +1,285 @@
+workshops:
+- id: WS0
+  titel: Kick-off & Stakeholder-Analyse
+  phase: ist
+  ziel: Projektauftrag, Zielbild und Erwartungen klären; Stakeholder und Einbindung
+    festlegen
+  datum: '2026-11-16'
+  beginn: 09:00
+  ort: vor Ort beim Kunden
+  teilnehmer_hinweis: Sponsor, Projektleitung, Kernteam (Stakeholder-Matrix vertraulich
+    vorbereiten)
+  bloecke:
+  - titel: Begrüßung, Ziele, Projektauftrag
+    minuten: 20
+    methode: null
+    hinweis: Ziele, Scope, Erfolgskriterien
+  - titel: Erwartungen & Befürchtungen
+    minuten: 25
+    methode: null
+    hinweis: 'Kartenabfrage: Was muss am Ende erreicht sein?'
+  - titel: Stakeholder-Mapping
+    minuten: 45
+    methode: stakeholder
+    hinweis: ''
+  - titel: Pause
+    minuten: 15
+    methode: null
+    hinweis: ''
+  - titel: Kernprozesse & Scope festlegen
+    minuten: 30
+    methode: null
+    hinweis: Welche 2-4 Prozesse werden aufgenommen?
+  - titel: Workshop-Serie & Termine abstimmen
+    minuten: 20
+    methode: null
+    hinweis: ''
+  - titel: Zusammenfassung & nächste Schritte
+    minuten: 15
+    methode: null
+    hinweis: ''
+- id: WS1
+  titel: Ist-Aufnahme Prozesse & Wertstrom
+  phase: ist
+  ziel: Kernprozesse abgrenzen und im Detail aufnehmen; Zeiten, Medien und Systeme
+    sichtbar machen
+  datum: '2026-11-23'
+  beginn: 09:00
+  ort: vor Ort beim Kunden
+  teilnehmer_hinweis: Prozessbeteiligte je Kernprozess (operativ), Prozessverantwortliche,
+    IT
+  bloecke:
+  - titel: Begrüßung & Ziele
+    minuten: 15
+    methode: null
+    hinweis: ''
+  - titel: Prozessrahmen SIPOC
+    minuten: 45
+    methode: sipoc
+    hinweis: ''
+  - titel: Ist-Prozess Swimlane/BPMN
+    minuten: 120
+    methode: prozess
+    hinweis: ''
+  - titel: Mittagspause
+    minuten: 45
+    methode: null
+    hinweis: ''
+  - titel: 'Wertstrom: Zeiten, Bestände, Qualität'
+    minuten: 90
+    methode: vsm
+    hinweis: Vorab Gemba-Walk empfohlen
+  - titel: Zusammenfassung & nächste Schritte
+    minuten: 15
+    methode: null
+    hinweis: ''
+- id: WS2
+  titel: Pain Points & Ursachenanalyse
+  phase: ist
+  ziel: Schmerzpunkte am Prozessbild sammeln, priorisieren und auf Grundursachen zurückführen
+  datum: '2026-11-30'
+  beginn: 09:00
+  ort: vor Ort beim Kunden
+  teilnehmer_hinweis: Prozessbeteiligte, Führungskräfte der Bereiche, Qualität
+  bloecke:
+  - titel: Begrüßung & Rückblick Prozessbilder
+    minuten: 15
+    methode: null
+    hinweis: ''
+  - titel: Pain Points sammeln & voten
+    minuten: 90
+    methode: painpoints
+    hinweis: ''
+  - titel: Pause
+    minuten: 15
+    methode: null
+    hinweis: ''
+  - titel: 5 Whys für Top-Pain-Points
+    minuten: 60
+    methode: whys
+    hinweis: ''
+  - titel: Ishikawa für Kernproblem
+    minuten: 45
+    methode: ishikawa
+    hinweis: ''
+  - titel: Zusammenfassung & nächste Schritte
+    minuten: 15
+    methode: null
+    hinweis: ''
+- id: WS3
+  titel: 'Anforderungen: User Stories & Story Map'
+  phase: ist
+  ziel: Anforderungen aus Nutzersicht formulieren, Story Map aufbauen, Handlungsfelder
+    ableiten
+  datum: '2026-12-07'
+  beginn: 09:00
+  ort: vor Ort beim Kunden
+  teilnehmer_hinweis: Key User je Rolle, Product Owner/Projektleitung, IT
+  bloecke:
+  - titel: Begrüßung & Rollen klären
+    minuten: 15
+    methode: null
+    hinweis: ''
+  - titel: User Stories schreiben (INVEST, Given/When/Then)
+    minuten: 90
+    methode: userstories
+    hinweis: ''
+  - titel: Pause
+    minuten: 15
+    methode: null
+    hinweis: ''
+  - titel: User Story Mapping & Handlungsfelder
+    minuten: 90
+    methode: handlungsfelder
+    hinweis: ''
+  - titel: Zusammenfassung & nächste Schritte
+    minuten: 15
+    methode: null
+    hinweis: ''
+- id: WS4
+  titel: 'Potenzial-Workshop: Use Cases'
+  phase: synthese
+  ziel: Lösungsideen je Handlungsfeld als Use-Case-Steckbriefe ausarbeiten und Wertbeitrag
+    prüfen
+  datum: '2026-12-14'
+  beginn: 09:00
+  ort: vor Ort beim Kunden
+  teilnehmer_hinweis: Bereichsleitungen, Key User, IT, ggf. Vertrieb/Service für neue
+    Services
+  bloecke:
+  - titel: Begrüßung & Handlungsfelder
+    minuten: 15
+    methode: null
+    hinweis: ''
+  - titel: 'Inspiration: Technologie-/Best-Practice-Impulse'
+    minuten: 30
+    methode: null
+    hinweis: Beispiele aus der Branche
+  - titel: Use-Case-Steckbriefe in Kleingruppen
+    minuten: 90
+    methode: usecases
+    hinweis: ''
+  - titel: Mittagspause
+    minuten: 45
+    methode: null
+    hinweis: ''
+  - titel: Gallery Walk
+    minuten: 30
+    methode: null
+    hinweis: Rückfragen, Dubletten zusammenführen
+  - titel: Value Proposition Canvas (neue Services)
+    minuten: 60
+    methode: vpc
+    hinweis: ''
+  - titel: Business Model Canvas (neue Services)
+    minuten: 45
+    methode: bmc
+    hinweis: nur bei Geschäftsmodell-Ideen
+  - titel: Zusammenfassung & nächste Schritte
+    minuten: 15
+    methode: null
+    hinweis: ''
+- id: WS5
+  titel: Fit-Gap-Analyse Standardsoftware
+  phase: synthese
+  ziel: Anforderungen gegen Standard (z.B. SAP, MES, APS) abgleichen, Gaps und Aufwand
+    bewerten
+  datum: '2026-12-21'
+  beginn: 09:00
+  ort: vor Ort beim Kunden
+  teilnehmer_hinweis: Key User, IT, Anbieter/Implementierungspartner
+  bloecke:
+  - titel: Begrüßung & Vorgehen
+    minuten: 15
+    methode: null
+    hinweis: ''
+  - titel: Fit-Gap je Prozess (Show & Tell)
+    minuten: 180
+    methode: fitgap
+    hinweis: ''
+  - titel: Mittagspause
+    minuten: 45
+    methode: null
+    hinweis: ''
+  - titel: 'Gaps bewerten: Prozess anpassen vs. System erweitern'
+    minuten: 45
+    methode: null
+    hinweis: ''
+  - titel: Zusammenfassung & nächste Schritte
+    minuten: 15
+    methode: null
+    hinweis: ''
+- id: WS6
+  titel: Bewertung & Priorisierung
+  phase: bewertung
+  ziel: Use Cases transparent bewerten (Nutzwert, Impact/Effort, Business Case) und
+    priorisieren
+  datum: '2026-12-28'
+  beginn: 09:00
+  ort: vor Ort beim Kunden
+  teilnehmer_hinweis: Geschäftsführung/Entscheider, Bereichsleitungen, Controlling,
+    IT
+  bloecke:
+  - titel: Begrüßung & Use-Case-Übersicht
+    minuten: 15
+    methode: null
+    hinweis: ''
+  - titel: Kriterien & Gewichtung bestätigen
+    minuten: 30
+    methode: kriterien
+    hinweis: ''
+  - titel: Scoring je Use Case
+    minuten: 90
+    methode: nwa
+    hinweis: ''
+  - titel: Pause
+    minuten: 15
+    methode: null
+    hinweis: ''
+  - titel: Business Case der Top-Use-Cases
+    minuten: 60
+    methode: businesscase
+    hinweis: ''
+  - titel: Impact/Effort-Matrix diskutieren
+    minuten: 30
+    methode: null
+    hinweis: Automatisch aus Scoring erzeugt
+  - titel: Zusammenfassung & nächste Schritte
+    minuten: 15
+    methode: null
+    hinweis: ''
+- id: WS7
+  titel: Roadmap & Verantwortlichkeiten
+  phase: bewertung
+  ziel: Now/Next/Later-Roadmap mit MVP, Pilot und KPIs festlegen; Verantwortlichkeiten
+    klären
+  datum: '2027-01-04'
+  beginn: 09:00
+  ort: vor Ort beim Kunden
+  teilnehmer_hinweis: Geschäftsführung, Projektleitung, Use-Case-Owner, IT, Betriebsrat
+    (Information)
+  bloecke:
+  - titel: Begrüßung & Priorisierungsergebnis
+    minuten: 15
+    methode: null
+    hinweis: ''
+  - titel: Roadmap Now/Next/Later, MVP & Pilot
+    minuten: 120
+    methode: roadmap
+    hinweis: ''
+  - titel: Pause
+    minuten: 15
+    methode: null
+    hinweis: ''
+  - titel: RACI-Matrix
+    minuten: 45
+    methode: raci
+    hinweis: ''
+  - titel: Governance, Budget, Kommunikation
+    minuten: 30
+    methode: null
+    hinweis: ''
+  - titel: Zusammenfassung & Entscheidungsvorlage
+    minuten: 15
+    methode: null
+    hinweis: ''
