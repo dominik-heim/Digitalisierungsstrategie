@@ -62,3 +62,27 @@ def test_refusal(monkeypatch):
         stream=lambda **kw: R({}, {}, **kw)))))
     with pytest.raises(ai.AIError):
         ai.ask_json("x", {"type": "object"})
+
+
+def test_ki_deaktiviert_sendet_nichts(monkeypatch):
+    def boom():
+        raise AssertionError("Client darf nicht erzeugt werden")
+    monkeypatch.setattr(ai, "_client", boom)
+    cfg = {"ki": {"aktiv": False}}
+    with pytest.raises(ai.AIError):
+        ai.extract_rows("painpoints", "x", [], cfg)
+    with pytest.raises(ai.AIError):
+        ai.derive_rows("userstories", {}, cfg)
+    with pytest.raises(ai.AIError):
+        ai.ai_management_summary({}, cfg)
+    with pytest.raises(ai.AIError):
+        ai.workshop_questions(cfg, [])
+
+
+def test_describe_payload_markiert_personendaten():
+    res = {"stakeholder": {"items": [1, 2]}, "painpoints": {"items": [1]}, "issues": []}
+    lines = ai.describe_payload("summary", {"ki": {"model": "claude-opus-5-5"}}, results=res)
+    assert any(x.startswith("⚠ Stakeholder") for x in lines)
+    assert any("Pain Points (1)" in x for x in lines)
+    assert lines[-1].startswith("Empfänger: Anthropic")
+    assert not any("Stakeholder" in x for x in ai.describe_payload("derive", {}, results=res))

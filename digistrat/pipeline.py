@@ -19,7 +19,9 @@ def run(project: Project, use_ai: bool = False, log=print) -> dict[str, Any]:
         + (f", Matrizen: {', '.join(data.wide)}" if data.wide else ""))
     results = analyze(data, project.config)
     summary = management_summary(results, project.config)
-    if use_ai:
+    if use_ai and not project.config.get("ki", {}).get("aktiv", True):
+        log("KI ist für dieses Projekt deaktiviert – regelbasierte Management Summary wird verwendet.")
+    elif use_ai:
         try:
             from .ai import ai_management_summary
             summary = ai_management_summary(results, project.config) or summary

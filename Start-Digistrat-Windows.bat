@@ -19,6 +19,12 @@ if not exist ".venv\Scripts\python.exe" (
   ".venv\Scripts\python.exe" -m pip install --upgrade pip >nul
   ".venv\Scripts\python.exe" -m pip install -e ".[app]" || ( echo Installation fehlgeschlagen & pause & exit /b 1 )
 )
+REM Streamlit-Abfrage nach E-Mail-Adresse beim ersten Start unterdruecken
+if not exist "%USERPROFILE%\.streamlit" mkdir "%USERPROFILE%\.streamlit"
+if not exist "%USERPROFILE%\.streamlit\credentials.toml" (
+  echo [general]> "%USERPROFILE%\.streamlit\credentials.toml"
+  echo email = "">> "%USERPROFILE%\.streamlit\credentials.toml"
+)
 echo Digistrat startet - der Browser oeffnet sich gleich (http://localhost:8501).
 echo Zum Beenden dieses Fenster schliessen.
 ".venv\Scripts\python.exe" -m streamlit run app\streamlit_app.py --browser.gatherUsageStats false

@@ -38,6 +38,17 @@ class AIError(RuntimeError):
 
 
 # ---------------------------------------------------------------- Basis
+def is_enabled(cfg: dict | None) -> bool:
+    """KI ist je Projekt abschaltbar (projekt.yaml → ki.aktiv)."""
+    return bool((cfg or {}).get("ki", {}).get("aktiv", True))
+
+
+def ensure_enabled(cfg: dict | None) -> None:
+    if not is_enabled(cfg):
+        raise AIError("KI ist für dieses Projekt deaktiviert (projekt.yaml → ki.aktiv: false). "
+                      "Es werden keine Daten an Anthropic gesendet.")
+
+
 def _client():
     try:
         import anthropic
@@ -69,6 +80,7 @@ def rows_schema(m: Method, extra_fields: list[Field] | None = None) -> dict[str,
 
 def ask_json(content: list[dict] | str, schema: dict, cfg: dict | None = None, system: str = SYSTEM) -> dict:
     """Ein Claude-Aufruf mit strukturierter Ausgabe (JSON-Schema)."""
+    ensure_enabled(cfg)
     ki = (cfg or {}).get("ki", {})
     client = _client()
     with client.beta.messages.stream(
@@ -136,6 +148,7 @@ def file_blocks(paths: list[Path]) -> list[dict]:
 # ---------------------------------------------------------------- Extraktion
 def extract_rows(method_key: str, text: str | None = None, files: list[Path] | None = None,
                  cfg: dict | None = None, context: str = "") -> tuple[list[dict], str]:
+    ensure_enabled(cfg)
     m = METHODS[method_key]
     if m.wide:
         raise AIError(f"{m.title}: Matrix-Methoden bitte direkt in Excel erfassen.")
@@ -195,10 +208,9 @@ DERIVE_PROMPTS = {
 def derive_rows(target: str, results: dict, cfg: dict | None = None, hint: str = "") -> tuple[list[dict], str]:
     if target not in DERIVE_PROMPTS:
         raise AIError(f"Ableitung für '{target}' nicht verfügbar. Möglich: {', '.join(DERIVE_PROMPTS)}")
+    ensure_enabled(cfg)
     m = METHODS[target]
-    ctx = {k: results[k] for k in ("painpoints", "ursachen", "userstories", "handlungsfelder", "usecases",
-                                   "nwa", "impact_effort", "roadmap", "prozess", "vsm") if k in results}
-    payload = json.dumps(_slim(ctx), ensure_ascii=False, default=str)
+    payload = json.dumps(_slim(derive_context(results)), ensure_ascii=False, default=str)
     content = [{"type": "text", "text": f"<projekt>\nKunde: {(cfg or {}).get('kunde')}, Branche: "
                                         f"{(cfg or {}).get('branche')}\n</projekt>\n<analyse>\n{payload}\n</analyse>"},
                {"type": "text", "text": f"Aufgabe: {DERIVE_PROMPTS[target]}\nZiel-Methode: {m.title} "
@@ -206,6 +218,76 @@ def derive_rows(target: str, results: dict, cfg: dict | None = None, hint: str =
                                         f"{_method_rules(target)}\nZusatzhinweis des Beraters: {hint or '–'}"}]
     out = ask_json(content, rows_schema(m), cfg)
     return out["rows"], out.get("hinweise", "")
+
+
+DERIVE_KEYS = ("painpoints", "ursachen", "userstories", "handlungsfelder", "usecases", "nwa", "impact_effort",
+               "roadmap", "prozess", "vsm")
+
+
+def derive_context(results: dict) -> dict:
+    return {k: results[k] for k in DERIVE_KEYS if k in results}
+
+
+def summary_context(results: dict) -> dict:
+    return {k: v for k, v in results.items() if k != "issues"}
+
+
+# ---------------------------------------------------------------- Transparenz: was wird gesendet?
+SECTION_LABELS = {
+    "stakeholder": "Stakeholder-Matrix (Namen, Rollen, Einfluss/Interesse, Haltung)",
+    "sipoc": "SIPOC", "prozess": "Ist-Prozesse (Schritte, Rollen, Systeme, Medien)",
+    "vsm": "Wertstrom (Zeiten, Qualität, Systeme)", "painpoints": "Pain Points",
+    "ursachen": "Ursachenanalysen (5 Whys, Ishikawa)", "userstories": "User Stories",
+    "storymap": "Story Map", "handlungsfelder": "Handlungsfelder", "usecases": "Use-Case-Steckbriefe",
+    "vpc": "Value Proposition Canvas", "bmc": "Business Model Canvas", "fitgap": "Fit-Gap-Anforderungen",
+    "nwa": "Nutzwertanalyse", "impact_effort": "Impact/Effort-Bewertung", "raci": "RACI (Rollen/Aufgaben)",
+    "businesscase": "Business Case (Kosten, Einsparungen)", "roadmap": "Roadmap", "kennzahlen": "Kennzahlen",
+}
+
+PERSONAL = {"stakeholder", "raci"}
+
+
+def _count(v: Any) -> str:
+    if isinstance(v, dict):
+        for k in ("items", "prozesse", "canvases", "use_cases", "whys"):
+            if k in v and hasattr(v[k], "__len__"):
+                return f" ({len(v[k])})"
+    return ""
+
+
+def describe_sections(ctx: dict) -> list[str]:
+    out = []
+    for k, v in ctx.items():
+        lab = SECTION_LABELS.get(k, k) + _count(v)
+        out.append(("⚠ " if k in PERSONAL else "") + lab)
+    return out
+
+
+def describe_payload(kind: str, cfg: dict | None, results: dict | None = None, files: list | None = None,
+                     text: str | None = None, context: str = "") -> list[str]:
+    """Für den Hinweis vor jedem KI-Aufruf: Liste der Daten, die an Anthropic gesendet werden."""
+    cfg = cfg or {}
+    out: list[str] = []
+    if kind == "import":
+        for f in files or []:
+            out.append(f"Datei: {getattr(f, 'name', f)}")
+        if text:
+            out.append(f"Notizen/Transkript ({len(text)} Zeichen)")
+        if context:
+            out.append(f"Kontexttext ({len(context)} Zeichen)")
+    elif kind == "derive":
+        out.append(f"Kunde und Branche: {cfg.get('kunde')}, {cfg.get('branche')}")
+        out += describe_sections(derive_context(results or {}))
+    elif kind == "summary":
+        out += describe_sections(summary_context(results or {}))
+    elif kind == "questions":
+        out.append(f"Kunde und Branche: {cfg.get('kunde')}, {cfg.get('branche')}")
+        out.append("Titel, Ziele und Blöcke der Workshops")
+        if context:
+            out.append(f"Kontexttext ({len(context)} Zeichen)")
+    model = cfg.get("ki", {}).get("model", DEFAULT_MODEL)
+    out.append(f"Empfänger: Anthropic-API (Modell {model})")
+    return out
 
 
 def _slim(obj: Any) -> Any:
@@ -221,7 +303,8 @@ def _slim(obj: Any) -> Any:
 def ai_management_summary(results: dict, cfg: dict) -> list[str]:
     schema = {"type": "object", "properties": {"kernaussagen": {"type": "array", "items": {"type": "string"}}},
               "required": ["kernaussagen"], "additionalProperties": False}
-    payload = json.dumps(_slim({k: v for k, v in results.items() if k != "issues"}), ensure_ascii=False, default=str)
+    ensure_enabled(cfg)
+    payload = json.dumps(_slim(summary_context(results)), ensure_ascii=False, default=str)
     out = ask_json([{"type": "text", "text": f"<analyse>\n{payload}\n</analyse>"},
                     {"type": "text", "text": (
                         f"Formuliere 6-8 Kernaussagen für die Management Summary der Digitalisierungsstrategie von "
@@ -233,6 +316,7 @@ def ai_management_summary(results: dict, cfg: dict) -> list[str]:
 
 
 def workshop_questions(cfg: dict, workshops: list[dict], context: str = "") -> dict[str, list[str]]:
+    ensure_enabled(cfg)
     schema = {"type": "object", "properties": {"workshops": {"type": "array", "items": {
         "type": "object", "properties": {"id": {"type": "string"}, "fragen": {"type": "array", "items": {"type": "string"}}},
         "required": ["id", "fragen"], "additionalProperties": False}}},

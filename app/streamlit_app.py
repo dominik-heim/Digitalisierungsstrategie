@@ -77,8 +77,29 @@ def sidebar() -> Project | None:
             KEY_FILE.unlink()
             os.environ.pop("ANTHROPIC_API_KEY", None)
             st.rerun()
+    proj = Project.open(ROOT / sel)
+    if not proj.config.get("ki", {}).get("aktiv", True):
+        st.sidebar.markdown("🔒 **KI für dieses Projekt deaktiviert**")
     st.sidebar.caption(f"Projekte in `{ROOT}`")
-    return Project.open(ROOT / sel)
+    return proj
+
+
+def ki_on(p: Project) -> bool:
+    return bool(p.config.get("ki", {}).get("aktiv", True))
+
+
+def consent(lines: list[str], key: str) -> bool:
+    """Hinweis vor jedem KI-Aufruf: zeigt, was gesendet wird, und verlangt eine Bestätigung."""
+    personal = any(line.startswith("⚠") for line in lines)
+    box = st.warning if personal else st.info
+    box("**Diese Daten werden an Anthropic (Claude) gesendet:**\n\n" + "\n".join(f"- {x}" for x in lines)
+        + ("\n\n⚠ = enthält personenbezogene Angaben" if personal else ""))
+    return st.checkbox("Ich bestätige die Übermittlung dieser Daten an Anthropic", key=f"consent_{key}")
+
+
+def ki_off_note() -> None:
+    st.info("🔒 KI ist für dieses Projekt deaktiviert – es werden keine Daten an Anthropic gesendet. "
+            "Änderbar unter „Projekt“.")
 
 
 def page_projekt(p: Project) -> None:
@@ -95,12 +116,19 @@ def page_projekt(p: Project) -> None:
     th["preset"] = c1.selectbox("Farbschema", list(PRESETS), index=list(PRESETS).index(th.get("preset", "ingenics")))
     th["pptx_template"] = c2.text_input("Optional: PowerPoint-Master (.pptx-Pfad)", th.get("pptx_template", ""))
     ki = c.setdefault("ki", {})
+    st.subheader("KI-Nutzung")
+    ki["aktiv"] = st.toggle("KI-Funktionen für dieses Projekt erlauben", value=bool(ki.get("aktiv", True)),
+                            help="Ausschalten, wenn der Kunde den Einsatz externer KI-Dienste ausschließt. "
+                                 "Dann werden keinerlei Daten an Anthropic übertragen.")
+    if not ki["aktiv"]:
+        st.caption("🔒 Deaktiviert: KI-Import, KI-Synthese, KI-Leitfragen und KI-Summary sind gesperrt.")
     ki["model"] = c1.text_input("KI-Modell", ki.get("model", "claude-opus-5-5"))
     ki["effort"] = c2.selectbox("KI-Gründlichkeit (effort)", ["low", "medium", "high", "xhigh", "max"],
                                 index=["low", "medium", "high", "xhigh", "max"].index(ki.get("effort", "high")))
     if st.button("Speichern"):
         p.save_config()
         st.success("Gespeichert.")
+        st.rerun()
     st.subheader("Vorgehensmodell")
     cols = st.columns(3)
     for col, (ph, ms) in zip(cols, methods_by_phase().items()):
@@ -126,9 +154,13 @@ def page_workshops(p: Project) -> None:
         return
     txt = st.text_area("Planung bearbeiten (YAML: Termine, Ort, Blöcke, Minuten)", f.read_text(encoding="utf-8"),
                        height=320)
-    use_ai = st.checkbox("Kundenspezifische Leitfragen per KI erzeugen")
+    use_ai = ki_on(p) and st.checkbox("Kundenspezifische Leitfragen per KI erzeugen")
     ctx = st.text_input("Kontext für die KI (Ziele, Besonderheiten des Kunden)") if use_ai else ""
-    if st.button("Agenden, Leitfäden & Erfassungsvorlagen erzeugen"):
+    ok = True
+    if use_ai:
+        from digistrat.ai import describe_payload
+        ok = consent(describe_payload("questions", p.config, context=ctx), "questions")
+    if st.button("Agenden, Leitfäden & Erfassungsvorlagen erzeugen", disabled=not ok):
         f.write_text(txt, encoding="utf-8")
         questions = None
         if use_ai:
@@ -157,6 +189,8 @@ def page_input(p: Project) -> None:
         st.success(f"{len(up)} Datei(en) gespeichert.")
         st.rerun()
     st.write("Vorhandene Dateien: " + ", ".join(f.name for f in sorted(p.input_dir.glob("*.xlsx"))))
+    if not ki_on(p):
+        ki_off_note()
     for ph, ms in methods_by_phase().items():
         st.subheader(PHASES[ph])
         for m in ms:
@@ -173,7 +207,7 @@ def page_input(p: Project) -> None:
                 tmp = Path(tempfile.gettempdir()) / f"Vorlage_{m.sheet}.xlsx"
                 write_input_templates(tmp, [m.key])
                 st.download_button("Leere Vorlage", tmp.read_bytes(), file_name=tmp.name, key=f"dl_{m.key}")
-                if not m.wide:
+                if not m.wide and ki_on(p):
                     _ai_import(p, m.key)
 
 
@@ -182,7 +216,11 @@ def _ai_import(p: Project, key: str) -> None:
     files = st.file_uploader("Rohdaten", accept_multiple_files=True, key=f"up_{key}",
                              type=["png", "jpg", "jpeg", "webp", "pdf", "docx", "pptx", "xlsx", "txt", "md", "csv"])
     text = st.text_area("Notizen/Transkript", key=f"tx_{key}", height=100)
-    if st.button("Mit KI strukturieren", key=f"ai_{key}", disabled=not (files or text)):
+    ok = False
+    if files or text:
+        from digistrat.ai import describe_payload
+        ok = consent(describe_payload("import", p.config, files=files, text=text), f"imp_{key}")
+    if st.button("Mit KI strukturieren", key=f"ai_{key}", disabled=not ok):
         from digistrat.ai import extract_rows
         tmpdir = Path(tempfile.mkdtemp())
         paths = []
@@ -218,14 +256,19 @@ def _review_and_save(p: Project, key: str) -> None:
 def page_ableiten(p: Project) -> None:
     st.header("KI-Synthese: Folge-Artefakte vorschlagen")
     st.caption("Claude leitet aus den bisherigen Ergebnissen Vorschläge ab – Sie prüfen und übernehmen.")
-    from digistrat.ai import DERIVE_PROMPTS
+    if not ki_on(p):
+        ki_off_note()
+        return
+    from digistrat.ai import DERIVE_PROMPTS, describe_payload
     target = st.selectbox("Was soll abgeleitet werden?", list(DERIVE_PROMPTS),
                           format_func=lambda k: f"{METHODS[k].title} – {DERIVE_PROMPTS[k][:70]}…")
     hint = st.text_input("Hinweis an die KI (optional)")
-    if st.button("Vorschläge erzeugen"):
+    res = analyze(p.load(), p.config)
+    ok = consent(describe_payload("derive", p.config, results=res), f"derive_{target}")
+    if st.button("Vorschläge erzeugen", disabled=not ok):
         from digistrat.ai import derive_rows
         with st.spinner("Claude analysiert …"):
-            rows, h = derive_rows(target, analyze(p.load(), p.config), p.config, hint)
+            rows, h = derive_rows(target, res, p.config, hint)
         st.session_state[f"rows_{target}"], st.session_state[f"hint_{target}"] = rows, h
     _review_and_save(p, target)
 
@@ -261,8 +304,12 @@ def page_auswertung(p: Project) -> None:
         c2.markdown("**Roadmap**")
         c2.dataframe(pd.DataFrame(res["roadmap"]["items"])[["id", "titel", "horizont", "start", "dauer"]],
                      hide_index=True, width="stretch")
-    use_ai = st.checkbox("Management Summary per KI formulieren")
-    if st.button("📊 PowerPoint & Excel erzeugen", type="primary"):
+    use_ai = ki_on(p) and st.checkbox("Management Summary per KI formulieren")
+    ok = True
+    if use_ai:
+        from digistrat.ai import describe_payload
+        ok = consent(describe_payload("summary", p.config, results=res), "summary")
+    if st.button("📊 PowerPoint & Excel erzeugen", type="primary", disabled=not ok):
         from digistrat.pipeline import run
         log = []
         with st.spinner("Erzeuge Ergebnisse …"):

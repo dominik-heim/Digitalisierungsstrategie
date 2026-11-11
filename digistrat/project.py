@@ -29,7 +29,8 @@ DEFAULT_CONFIG: dict[str, Any] = {
         "pptx_template": "",  # optional: Pfad zu Corporate-Design-Master (.pptx)
         "logo": "",
     },
-    "ki": {"model": "claude-opus-5-5", "effort": "high"},
+    # aktiv: false sperrt alle KI-Funktionen für dieses Projekt (z.B. wenn der Kunde KI ausschließt)
+    "ki": {"aktiv": True, "model": "claude-opus-5-5", "effort": "high"},
 }
 
 HEADER_FILL = PatternFill("solid", fgColor="152C5A")

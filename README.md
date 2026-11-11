@@ -170,6 +170,11 @@ theme:
 ## KI und Datenschutz
 
 - Die KI wird nur bei expliziten KI-Befehlen aufgerufen. Die Auswertung selbst ist regelbasiert und läuft offline.
+- **KI-Schalter je Projekt:** in der App unter „Projekt → KI-Nutzung“ oder per `digistrat ki <ordner> aus`. Ist er aus,
+  sind alle KI-Funktionen gesperrt und es werden keinerlei Daten an Anthropic übertragen. Gedacht für Kunden, die KI ausschließen.
+- **Hinweis vor jedem KI-Aufruf:** Die App listet auf, welche Daten gesendet werden. Personenbezogene Angaben wie die
+  Stakeholder-Matrix sind mit ⚠ markiert. Der Button wird erst nach Bestätigung aktiv. Auf der Kommandozeile erscheint
+  dieselbe Liste mit einer Rückfrage; `--ja` bestätigt ohne Rückfrage.
 - KI-Ergebnisse landen als eigene `KI_*.xlsx`-Dateien im Input-Ordner und werden vor der Auswertung geprüft (Human in the Loop).
 - Strukturierte Ausgaben (JSON-Schema) garantieren, dass die KI exakt die Spalten der Methoden-Tools liefert.
 - Kundendaten gehören nicht ins Repository. `projekte/` ist deshalb in `.gitignore` ausgeschlossen.
