@@ -17,4 +17,4 @@ fi
 mkdir -p "$HOME/.streamlit"
 [ -f "$HOME/.streamlit/credentials.toml" ] || printf '[general]\nemail = ""\n' > "$HOME/.streamlit/credentials.toml"
 echo "Digistrat startet - der Browser oeffnet sich gleich (http://localhost:8501). Zum Beenden dieses Fenster schliessen."
-.venv/bin/python -m streamlit run app/streamlit_app.py --browser.gatherUsageStats false
+.venv/bin/python -m streamlit run app/streamlit_app.py --server.address localhost --browser.gatherUsageStats false

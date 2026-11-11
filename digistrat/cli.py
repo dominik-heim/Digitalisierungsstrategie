@@ -221,7 +221,8 @@ def cmd_auswerten(a) -> None:
 
 def cmd_app(a) -> None:
     app = Path(__file__).resolve().parent.parent / "app" / "streamlit_app.py"
-    subprocess.call([sys.executable, "-m", "streamlit", "run", str(app)])
+    subprocess.call([sys.executable, "-m", "streamlit", "run", str(app), "--server.address", "localhost",
+                     "--browser.gatherUsageStats", "false"])
 
 
 if __name__ == "__main__":

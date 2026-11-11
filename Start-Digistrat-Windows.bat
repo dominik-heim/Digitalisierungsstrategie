@@ -27,5 +27,5 @@ if not exist "%USERPROFILE%\.streamlit\credentials.toml" (
 )
 echo Digistrat startet - der Browser oeffnet sich gleich (http://localhost:8501).
 echo Zum Beenden dieses Fenster schliessen.
-".venv\Scripts\python.exe" -m streamlit run app\streamlit_app.py --browser.gatherUsageStats false
+".venv\Scripts\python.exe" -m streamlit run app\streamlit_app.py --server.address localhost --browser.gatherUsageStats false
 pause
